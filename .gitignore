@@ -1,0 +1,10 @@
+# Folders
+b123d_venv/
+__pycache__/
+.ipynb_checkpoints/
+docs/
+cad_files/
+
+# File
+voxels_bd.ipynb
+build123.code.workspace
