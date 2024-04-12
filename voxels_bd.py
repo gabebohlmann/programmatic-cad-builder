@@ -34,8 +34,10 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
     d_i_p = d_i                                      # diameter of inside cylinder on plug
     r_i_p = d_i_p / 2                                # radius of inside cylinder on plug
     r_o_p = r_i_p + t_c                              # radius of outside cylinder on plug
-    r_i_s = r_o_p                                    # radius of inside cylinder on socket
-    r_o_s = r_i_s + t_c                              # radius of outside cylinder on socket
+    # r_i_s = r_o_p                                    # radius of inside cylinder on socket
+    # r_o_s = r_i_s + t_c                              # radius of outside cylinder on socket
+    r_i_s = r_i_p
+    r_o_s = r_o_p
     s_o = s_i + (2 * t_b)                            # side length of cube on inside
     h_c_a = h_c - t_b                                # actual cylinder height
 
@@ -69,6 +71,11 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
             Circle(r_o_s)
             Circle(r_i_s, mode=Mode.SUBTRACT)
         extrude(amount= h_c_a)
+        
+        with BuildSketch(Location(((s_i/2)-7.5, (s_o/2), (s_i/2)+2.5), (270, 0, 0))) as label_sk:
+            Text(str(i), font_size=10, align=(0,0))
+            # Location(top_face[0].center(), (100, 100, 0))
+        extrude(amount= 2)
 
         # Create the voxel side joint for hook mounting
         RigidJoint(
@@ -116,6 +123,7 @@ def export_assy(assy):
     i = assy.label
     print(f"Exporting {i} to {cd}/cad_files/")
     filename_STEP = f"{cd}/cad_files/{assy.label}.STEP"
+    # export_step(assy, filename_STEP)
     assy.export_step(filename_STEP)                               # Export the voxel as a .STEP file
     filename_STL = f"{cd}/cad_files/{assy.label}.STL"
     assy.export_stl(filename_STL)                                # Export the voxel as an .STL file
@@ -208,18 +216,18 @@ def chain_voxels_recursive(n, prev_voxel=None, counter=1, path=None):
     return chain_voxels_recursive(n-1, voxels_assy, counter+1, path)
 
 ### Parameters ###
-s_i = 5.5                                                       # side length of the inside of the hollow cube
+s_i = 30                                                        # side length of the inside of the hollow cube
 d_i = 5                                                         # inside diameter of plug cylinder, "cut"
 t_b = 5                                                         # box wall 3DP wall thickness
 t_c = 2                                                         # cylinder wall 3DP thickness
-h_c = 10                                                        # distance from inside cube that the cylinder extends
+h_c =  20 + t_b                                                     # distance from inside cube that the cylinder extends
 
 ### Function calls ###
 
 ### single test voxel
-# voxel_1 = create_voxel(s_i, d_i, t_b, t_c, h_c, 1)            # creates cad model of voxel with build123d
-# export_assy(voxel_1)                                          # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
-# show(voxel_1)                                                 # displays the voxel in the viewer                            
+voxel_1 = create_voxel(s_i, d_i, t_b, t_c, h_c, 1)            # creates cad model of voxel with build123d
+export_assy(voxel_1)                                          # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
+show(voxel_1)                                                 # displays the voxel in the viewer                            
 
 ### creates and exports a series of voxels                    
 # create_voxels(s_i, d_i, t_b, t_c, h_c)                       
@@ -231,5 +239,5 @@ h_c = 10                                                        # distance from 
 # export_assy(voxels_assy)
 
 ### recursive voxel assembly builder
-num_voxels = 10
-final_assy = chain_voxels_recursive(num_voxels)
+# num_voxels = 10
+# final_assy = chain_voxels_recursive(num_voxels)
