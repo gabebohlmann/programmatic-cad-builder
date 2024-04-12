@@ -5,6 +5,7 @@ __pycache__/
 docs/
 cad_files/
 
-# File
+# Files
 voxels_bd.ipynb
 build123.code.workspace
+.python-version
