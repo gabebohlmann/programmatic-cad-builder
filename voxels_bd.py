@@ -220,7 +220,9 @@ s_i = 30                                                        # side length of
 d_i = 5                                                         # inside diameter of plug cylinder, "cut"
 t_b = 5                                                         # box wall 3DP wall thickness
 t_c = 2                                                         # cylinder wall 3DP thickness
-h_c =  20 + t_b                                                 # distance from inside cube that the cylinder extends
+h_c =  20 + t_b                                                 # distance from inside cube that the cylinder extends (includes box wall thickness)
+#h_c_a = h_c - t_b                                               # actual cylinder height from outside wall
+
 
 ### Function calls ###
 
