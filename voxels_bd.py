@@ -11,10 +11,11 @@ from ocp_vscode import *
 
 ### Functions ###
 
+
 def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
     """
     Creates a voxel based on given parameters.
-    
+
     :param s_i: Side length of the inside of the hollow cube.
     :type s_i: float
     :param d_i: Inside diameter of plug cylinder, "cut".
@@ -31,15 +32,15 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
     :rtype: Compound
     """
     # derived parameters
-    d_i_p = d_i                                         # diameter of inside cylinder on plug
-    r_i_p = d_i_p / 2                                   # radius of inside cylinder on plug
-    r_o_p = r_i_p + t_c                                 # radius of outside cylinder on plug
+    d_i_p = d_i  # diameter of inside cylinder on plug
+    r_i_p = d_i_p / 2  # radius of inside cylinder on plug
+    r_o_p = r_i_p + t_c  # radius of outside cylinder on plug
     # r_i_s = r_o_p                                     # radius of inside cylinder on socket
     # r_o_s = r_i_s + t_c                               # radius of outside cylinder on socket
     r_i_s = r_i_p
     r_o_s = r_o_p
-    s_o = s_i + (2 * t_b)                               # side length of cube on inside
-    h_c_a = h_c - t_b                                   # actual cylinder height
+    s_o = s_i + (2 * t_b)  # side length of cube on inside
+    h_c_a = h_c - t_b  # actual cylinder height
 
     with BuildPart() as voxel:
         voxel.label = f"Part_{i}"
@@ -52,61 +53,78 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
         back_face = voxel.faces().sort_by(Axis.Z).last
         top_face = voxel.faces().group_by(Axis.Y)[-1]
 
-        # Create plug on the front face
+        # Create hole on the front face
         with BuildSketch(front_face) as plug_hol_sk:
             Circle(r_i_p)
-        extrude(amount= -t_b, mode=Mode.SUBTRACT)
+        extrude(amount=-t_b, mode=Mode.SUBTRACT)
 
-        with BuildSketch(front_face) as plug_cyl_sk:
-            Circle(r_o_p)
-            Circle(r_i_p, mode=Mode.SUBTRACT)
-        extrude(amount=h_c_a)
+        # Create cylinder on front face
+        # with BuildSketch(front_face) as plug_cyl_sk:
+        #     Circle(r_o_p)
+        #     Circle(r_i_p, mode=Mode.SUBTRACT)
+        # extrude(amount=h_c_a)
 
-        # Create socket on the back face
+        # Create hole on the back face
         with BuildSketch(back_face) as sock_hol_sk:
             Circle(r_i_s)
-        extrude(amount= -t_b, mode=Mode.SUBTRACT)
+        extrude(amount=-t_b, mode=Mode.SUBTRACT)
 
-        with BuildSketch(back_face) as sock_cyl_sk:
-            Circle(r_o_s)
-            Circle(r_i_s, mode=Mode.SUBTRACT)
-        extrude(amount= h_c_a)
-        
-        with BuildSketch(Location(((s_i/2)-7.5, (s_o/2), (s_i/2)+2.5), (270, 0, 0))) as label_sk:
-            Text(str(i), font_size=10, align=(0,0))
+        # Create cylinder on the front face
+        # with BuildSketch(back_face) as sock_cyl_sk:
+        #     Circle(r_o_s)
+        #     Circle(r_i_s, mode=Mode.SUBTRACT)
+        # extrude(amount= h_c_a)
+
+        with BuildSketch(
+            Location(((s_i / 2) - 7.5, (s_o / 2), (s_i / 2) + 2.5), (270, 0, 0))
+        ) as label_sk:
+            Text(str(i), font_size=10, align=(0, 0))
             # Location(top_face[0].center(), (100, 100, 0))
-        extrude(amount= 2)
+        extrude(amount=2)
 
         # Create the voxel side joint for hook mounting
         RigidJoint(
-            "hook_mount", 
+            "hook_mount",
             voxel,
             Location(top_face[0].center(), (0, 0, 0)),
         )
-        
+
+        # Create the voxel side joints for tube mounting
+        # RigidJoint(
+        #     "tube_front_mount",
+        #     voxel,
+        #     Location(front_face[0].center(), (0, 0, 0)),
+        # )
+        # RigidJoint(
+        #     "tube_back_mount",
+        #     voxel,
+        #     Location(back_face[0].center(), (0, 0, 0)),
+        # )
+
     with BuildPart() as hook:
-        cd = os.path.dirname(os.path.realpath(__file__))                # Get the current directory of the script
+        cd = os.path.dirname(
+            os.path.realpath(__file__)
+        )  # Get the current directory of the script
         hook_path = os.path.join(cd, "hook.STEP")
         hook = import_step(hook_path)
-        bottom_face = voxel.faces().group_by(Axis.Y)[-3]                # Identify the bottom face of the voxel for hook placement
+        bottom_face = voxel.faces().group_by(Axis.Y)[
+            -3
+        ]  # Identify the bottom face of the voxel for hook placement
         # Create the hook side joint for hook mounting
-        RigidJoint(
-            "hook_mount", 
-            hook,
-            Location((0,0,0), (0,90,0))
-        )
-    
-    # create labels for the assembly components 
-    voxel.label = "i"
-    hook.label = "hook"
-    
-    # Connect the hook to the voxel using the joints
-    hook.joints["hook_mount"].connect_to(voxel.joints["hook_mount"])
-    
-    voxel_assy = Compound(label= f"voxel_{i}", children=[voxel.part, hook])
+        RigidJoint("hook_mount", hook, Location((0, 0, 0), (0, 90, 0)))
 
-    show(voxel_assy)
-    return voxel_assy
+        # create labels for the assembly components
+        voxel.label = "i"
+        hook.label = "hook"
+
+        # Connect the hook to the voxel using the joints
+        hook.joints["hook_mount"].connect_to(voxel.joints["hook_mount"])
+
+        voxel_assy = Compound(label=f"voxel_{i}", children=[voxel.part, hook])
+
+        show(voxel_assy)
+        return voxel_assy
+
 
 def export_assy(assy):
     """
@@ -119,14 +137,17 @@ def export_assy(assy):
     :param cd: The current directory of the script.
     :type cd: str
     """
-    cd = os.path.dirname(os.path.realpath(__file__))                # Get the current directory of the script
+    cd = os.path.dirname(
+        os.path.realpath(__file__)
+    )  # Get the current directory of the script
     i = assy.label
     print(f"Exporting {i} to {cd}/cad_files/")
     filename_STEP = f"{cd}/cad_files/{assy.label}.STEP"
     # export_step(assy, filename_STEP)
-    assy.export_step(filename_STEP)                                 # Export the voxel as a .STEP file
+    assy.export_step(filename_STEP)  # Export the voxel as a .STEP file
     filename_STL = f"{cd}/cad_files/{assy.label}.STL"
-    assy.export_stl(filename_STL)                                   # Export the voxel as an .STL file
+    assy.export_stl(filename_STL)  # Export the voxel as an .STL file
+
 
 def create_voxels(s_i, d_i, t_b, t_c, h_c):
     """
@@ -146,7 +167,9 @@ def create_voxels(s_i, d_i, t_b, t_c, h_c):
     :type cd: str
     """
 
-    cd = os.path.dirname(os.path.realpath(__file__))                    # Get the current directory of the script
+    cd = os.path.dirname(
+        os.path.realpath(__file__)
+    )  # Get the current directory of the script
     i = 1
     us = [5.5, 7.5, 10, 12.5, 15, 17.5, 20, 21.5, 22.5, 25, 27.5, 40, 50, 75, 100]
     for s_i in us:
@@ -161,9 +184,13 @@ def create_voxels(s_i, d_i, t_b, t_c, h_c):
 
 
 def connect_voxels(voxel_1, voxel_2):
-    voxel_1_plug_face = voxel_1.faces().group_by(Axis.X)[-1]            # Identify the front, back, and top faces of the cube
-    voxel_2_socket_face = voxel_2.faces().group_by(Axis.X)[2]           # back_face = voxel_1.faces().sort_by(Axis.Z).last
-    
+    voxel_1_plug_face = voxel_1.faces().group_by(Axis.X)[
+        -1
+    ]  # Identify the front, back, and top faces of the cube
+    voxel_2_socket_face = voxel_2.faces().group_by(Axis.X)[
+        2
+    ]  # back_face = voxel_1.faces().sort_by(Axis.Z).last
+
     # Create the voxel 1 plug joint for hook mounting
     RigidJoint(
         "voxel_1_plug",
@@ -180,15 +207,16 @@ def connect_voxels(voxel_1, voxel_2):
 
     # mate the plug and socket joints into an assembly
     voxel_1.joints["voxel_1_plug"].connect_to(voxel_2.joints["voxel_2_socket"])
-    voxels_assy = Compound(label= f"voxels_assy", children=[voxel_1, voxel_2])
+    voxels_assy = Compound(label=f"voxels_assy", children=[voxel_1, voxel_2])
 
     show(voxels_assy)
     return voxels_assy
 
+
 def chain_voxels_recursive(n, prev_voxel=None, counter=1, path=None):
     """
     Recursively chain n voxels together.
-    
+
     :param n: Number of voxels left to create and chain.
     :type n: int
     :param prev_voxel: The previous voxel to which the new voxel will be chained.
@@ -203,7 +231,7 @@ def chain_voxels_recursive(n, prev_voxel=None, counter=1, path=None):
     if n == 0:
         return prev_voxel
 
-    s_i = random.uniform(5.5, 100)                              # Randomly generate s_i between 5.5 and 100 mm
+    s_i = random.uniform(5.5, 100)  # Randomly generate s_i between 5.5 and 100 mm
     voxel = create_voxel(s_i, d_i, t_b, t_c, h_c, counter)
     export_assy(voxel)
 
@@ -211,28 +239,37 @@ def chain_voxels_recursive(n, prev_voxel=None, counter=1, path=None):
         voxels_assy = connect_voxels(prev_voxel, voxel)
         export_assy(voxels_assy)
     else:
-        voxels_assy = voxel                                     # If it's the first voxel, there's no previous voxel to connect to.
+        voxels_assy = (
+            voxel  # If it's the first voxel, there's no previous voxel to connect to.
+        )
 
-    return chain_voxels_recursive(n-1, voxels_assy, counter+1, path)
+    return chain_voxels_recursive(n - 1, voxels_assy, counter + 1, path)
+
 
 ### Parameters ###
-s_i = 30                                                        # side length of the inside of the hollow cube
-d_i = 5                                                         # inside diameter of plug cylinder, "cut"
-t_b = 5                                                         # box wall 3DP wall thickness
-t_c = 2                                                         # cylinder wall 3DP thickness
-h_c =  20 + t_b                                                 # distance from inside cube that the cylinder extends (includes box wall thickness)
-#h_c_a = h_c - t_b                                               # actual cylinder height from outside wall
+s_i = 30  # side length of the inside of the hollow cube
+d_i = 5  # inside diameter of plug cylinder, "cut"
+t_b = 5  # box wall 3DP wall thickness
+t_c = 2.5  # cylinder wall 3DP thickness
+h_c = (
+    20 + t_b
+)  # distance from inside cube that the cylinder extends (includes box wall thickness)
+# h_c_a = h_c - t_b                                              # actual cylinder height from outside wall
 
 
 ### Function calls ###
 
 ### single test voxel
-voxel_1 = create_voxel(s_i, d_i, t_b, t_c, h_c, 1)              # creates cad model of voxel with build123d
-export_assy(voxel_1)                                            # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
-show(voxel_1)                                                   # displays the voxel in the viewer                            
+voxel_1 = create_voxel(
+    s_i, d_i, t_b, t_c, h_c, 1
+)  # creates cad model of voxel with build123d
+export_assy(
+    voxel_1
+)  # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
+show(voxel_1)  # displays the voxel in the viewer
 
-### creates and exports a series of voxels                    
-# create_voxels(s_i, d_i, t_b, t_c, h_c)                       
+### creates and exports a series of voxels
+# create_voxels(s_i, d_i, t_b, t_c, h_c)
 
 ### creates and exports a 2 voxel assembly ###
 # voxel_2 = create_voxel(s_i, d_i, t_b, t_c, h_c, 1)            # creates cad model of voxel with build123d
