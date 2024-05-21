@@ -31,15 +31,15 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
     :rtype: Compound
     """
     # derived parameters
-    d_i_p = d_i                                      # diameter of inside cylinder on plug
-    r_i_p = d_i_p / 2                                # radius of inside cylinder on plug
-    r_o_p = r_i_p + t_c                              # radius of outside cylinder on plug
-    # r_i_s = r_o_p                                    # radius of inside cylinder on socket
-    # r_o_s = r_i_s + t_c                              # radius of outside cylinder on socket
+    d_i_p = d_i                                         # diameter of inside cylinder on plug
+    r_i_p = d_i_p / 2                                   # radius of inside cylinder on plug
+    r_o_p = r_i_p + t_c                                 # radius of outside cylinder on plug
+    # r_i_s = r_o_p                                     # radius of inside cylinder on socket
+    # r_o_s = r_i_s + t_c                               # radius of outside cylinder on socket
     r_i_s = r_i_p
     r_o_s = r_o_p
-    s_o = s_i + (2 * t_b)                            # side length of cube on inside
-    h_c_a = h_c - t_b                                # actual cylinder height
+    s_o = s_i + (2 * t_b)                               # side length of cube on inside
+    h_c_a = h_c - t_b                                   # actual cylinder height
 
     with BuildPart() as voxel:
         voxel.label = f"Part_{i}"
@@ -88,7 +88,7 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
         cd = os.path.dirname(os.path.realpath(__file__))                # Get the current directory of the script
         hook_path = os.path.join(cd, "hook.STEP")
         hook = import_step(hook_path)
-        bottom_face = voxel.faces().group_by(Axis.Y)[-3]                                        # Identify the bottom face of the voxel for hook placement
+        bottom_face = voxel.faces().group_by(Axis.Y)[-3]                # Identify the bottom face of the voxel for hook placement
         # Create the hook side joint for hook mounting
         RigidJoint(
             "hook_mount", 
@@ -124,9 +124,9 @@ def export_assy(assy):
     print(f"Exporting {i} to {cd}/cad_files/")
     filename_STEP = f"{cd}/cad_files/{assy.label}.STEP"
     # export_step(assy, filename_STEP)
-    assy.export_step(filename_STEP)                               # Export the voxel as a .STEP file
+    assy.export_step(filename_STEP)                                 # Export the voxel as a .STEP file
     filename_STL = f"{cd}/cad_files/{assy.label}.STL"
-    assy.export_stl(filename_STL)                                # Export the voxel as an .STL file
+    assy.export_stl(filename_STL)                                   # Export the voxel as an .STL file
 
 def create_voxels(s_i, d_i, t_b, t_c, h_c):
     """
@@ -146,7 +146,7 @@ def create_voxels(s_i, d_i, t_b, t_c, h_c):
     :type cd: str
     """
 
-    cd = os.path.dirname(os.path.realpath(__file__))                # Get the current directory of the script
+    cd = os.path.dirname(os.path.realpath(__file__))                    # Get the current directory of the script
     i = 1
     us = [5.5, 7.5, 10, 12.5, 15, 17.5, 20, 21.5, 22.5, 25, 27.5, 40, 50, 75, 100]
     for s_i in us:
@@ -154,8 +154,8 @@ def create_voxels(s_i, d_i, t_b, t_c, h_c):
         voxel = create_voxel(s_i, d_i, t_b, t_c, h_c, i)
         export_assy(voxel)
         # filename = f"{cd}//voxel_{s_i}.STL"
-        # voxel.export_step(filename)                          # Export the voxel as a .STEP file
-        # voxel.export_stl(filename)                           # Export the voxel as an .STL file
+        # voxel.export_step(filename)                                   # Export the voxel as a .STEP file
+        # voxel.export_stl(filename)                                    # Export the voxel as an .STL file
         show(voxel)
         i += 1
 
@@ -203,7 +203,7 @@ def chain_voxels_recursive(n, prev_voxel=None, counter=1, path=None):
     if n == 0:
         return prev_voxel
 
-    s_i = random.uniform(5.5, 100)  # Randomly generate s_i between 5.5 and 100 mm
+    s_i = random.uniform(5.5, 100)                              # Randomly generate s_i between 5.5 and 100 mm
     voxel = create_voxel(s_i, d_i, t_b, t_c, h_c, counter)
     export_assy(voxel)
 
@@ -211,7 +211,7 @@ def chain_voxels_recursive(n, prev_voxel=None, counter=1, path=None):
         voxels_assy = connect_voxels(prev_voxel, voxel)
         export_assy(voxels_assy)
     else:
-        voxels_assy = voxel  # If it's the first voxel, there's no previous voxel to connect to.
+        voxels_assy = voxel                                     # If it's the first voxel, there's no previous voxel to connect to.
 
     return chain_voxels_recursive(n-1, voxels_assy, counter+1, path)
 
@@ -220,14 +220,14 @@ s_i = 30                                                        # side length of
 d_i = 5                                                         # inside diameter of plug cylinder, "cut"
 t_b = 5                                                         # box wall 3DP wall thickness
 t_c = 2                                                         # cylinder wall 3DP thickness
-h_c =  20 + t_b                                                     # distance from inside cube that the cylinder extends
+h_c =  20 + t_b                                                 # distance from inside cube that the cylinder extends
 
 ### Function calls ###
 
 ### single test voxel
-voxel_1 = create_voxel(s_i, d_i, t_b, t_c, h_c, 1)            # creates cad model of voxel with build123d
-export_assy(voxel_1)                                          # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
-show(voxel_1)                                                 # displays the voxel in the viewer                            
+voxel_1 = create_voxel(s_i, d_i, t_b, t_c, h_c, 1)              # creates cad model of voxel with build123d
+export_assy(voxel_1)                                            # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
+show(voxel_1)                                                   # displays the voxel in the viewer                            
 
 ### creates and exports a series of voxels                    
 # create_voxels(s_i, d_i, t_b, t_c, h_c)                       
