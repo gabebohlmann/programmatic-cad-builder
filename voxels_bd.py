@@ -1,13 +1,31 @@
 import random
 import os
 
-import cadquery as cq
-from build123d import *
-from ocp_vscode import *
+# import cadquery as cq
+# from build123d import *
+from build123d import (
+  BuildPart, 
+  BuildLine, 
+  BuildSketch, 
+  Box, 
+  Mode,
+  Axis,
+  extrude,
+  Location,
+  Circle,
+  Line,
+  RadiusArc,
+  Text, 
+  make_face,
+  RigidJoint,
+  Compound, 
+)
+from ocp_vscode import show
 
 ## TODO
 # 1. Add build123d code for hook
 # 1. Add argument to export function to specify .STEP or .STL
+# 1. Change from star imports to individual component imports
 
 ### Functions ###
 
@@ -34,13 +52,13 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
   # derived parameters
   d_i_p = d_i  # diameter of inside cylinder on plug
   r_i_p = d_i_p / 2  # radius of inside cylinder on plug
-  r_o_p = r_i_p + t_c  # radius of outside cylinder on plug
+  # r_o_p = r_i_p + t_c  # radius of outside cylinder on plug
   # r_i_s = r_o_p                                     # radius of inside cylinder on socket
   # r_o_s = r_i_s + t_c                               # radius of outside cylinder on socket
   r_i_s = r_i_p
-  r_o_s = r_o_p
+  # r_o_s = r_o_p
   s_o = s_i + (2 * t_b)  # side length of cube on inside
-  h_c_a = h_c - t_b  # actual cylinder height
+  # h_c_a = h_c - t_b  # actual cylinder height
 
   with BuildPart() as voxel:
     voxel.label = f"Part_{i}"
@@ -51,7 +69,7 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
     # Identify the front, back, and top faces of the cube
     front_face = voxel.faces().sort_by(Axis.Z).first
     back_face = voxel.faces().sort_by(Axis.Z).last
-    top_face = voxel.faces().group_by(Axis.Y)[-1]
+    # top_face = voxel.faces().group_by(Axis.Y)[-1]
 
     # Create hole on the front face
     with BuildSketch(front_face) as plug_hol_sk:
@@ -67,6 +85,7 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
     # Create hole on the back face
     with BuildSketch(back_face) as sock_hol_sk:
       Circle(r_i_s)
+      
     extrude(amount=-t_b, mode=Mode.SUBTRACT)
 
     # Create cylinder on the front face
@@ -81,50 +100,169 @@ def create_voxel(s_i, d_i, t_b, t_c, h_c, i):
       Text(str(i), font_size=10, align=(0, 0))
       # Location(top_face[0].center(), (100, 100, 0))
     extrude(amount=2)
+    
+    # with BuildPart() as front_tube:
+    #   with BuildSketch(Location(front_face.center().add((-1, 4.9, 0)), (0,0,0))) as sketch:
+    #     with BuildLine() as line:
+    #       l1 = Line((0, 0), (0, 2.101))
+    #       l2 = Line((0, 2.101), (2.101, 2.101))
+    #       l3 = Line((2.101, 2.101), (2.101, 0))
+    #       # l4 = Line((2, 0), (0, 0))
+    #       # l5 = ThreePointArc(l1 @ 0, (-10, -10), l3 @ 1)
+    #       l5 = RadiusArc(l1 @ 0, l3@ 1, 5, False )
+    #     make_face()
+    #   extrude(amount=-20, mode=Mode.ADD)
+      
+    # with BuildPart() as back_tube:
+    #   with BuildSketch(Location(back_face.center().add((-1, 4.9, 0)), (0,0,0))) as sketch:
+    #     with BuildLine() as line:
+    #       l6 = Line((0, 0), (0, 2.101))
+    #       l7 = Line((0, 2.101), (2.101, 2.101))
+    #       l8 = Line((2.101, 2.101), (2.101, 0))
+    #       # l9 = Line((2, 0), (0, 0))
+    #       # l10 = ThreePointArc(l1 @ 0, (-10, -10), l3 @ 1)
+    #       l11= RadiusArc(l6 @ 0, l8@ 1, 5, False )
+    #     make_face()
+    #   extrude(amount=-20, mode=Mode.ADD)
+  
+  # # Identify the front, back, and top faces of the cube
+
+  # top_face = part.faces().group_by(Axis.Y)[-1]
+  # top_face = part.faces().sort_by(Axis.Y).first
+  # tube_front_face = tube.faces().sort_by(Axis.Z).first
+  
+
+  # # Create hole on the front face
+  # # with BuildSketch(Location((1, -4.9, 0), (180, 0, 0))) as hole:
+  # with BuildSketch(Location(tube_front_face.center(), (0, 0, 0))) as hole:
+  #   Circle(2.5)
+  # extrude(amount=-20, mode=Mode.SUBTRACT)
 
     # Create the voxel side joint for hook mounting
-    RigidJoint(
-      "hook_mount",
-      voxel,
-      Location(top_face[0].center(), (0, 0, 0)),
-    )
+  #   RigidJoint(
+  #     "hook_mount_voxel",
+  #     voxel,
+  #     Location(top_face[0].center(), (0, 0, 0)),
+  #   )
 
-    # Create the voxel side joints for tube mounting
-    # RigidJoint(
-    #     "tube_front_mount",
-    #     voxel,
-    #     Location(front_face[0].center(), (0, 0, 0)),
-    # )
-    # RigidJoint(
-    #     "tube_back_mount",
-    #     voxel,
-    #     Location(back_face[0].center(), (0, 0, 0)),
-    # )
+  #   # Create the voxel side joints for tube mounting
+  #   RigidJoint(
+  #     "tube_front_mount_voxel",
+  #     voxel,
+  #     Location(front_face.center(), (0, 0, 0)),
+  #   )
+    
+  #   RigidJoint(
+  #       "tube_back_mount_voxel",
+  #       voxel,
+  #       Location(back_face.center(), (0, 0, 0)),
+  #   )
 
-  with BuildPart() as hook:
-    cd = os.path.dirname(
-      os.path.realpath(__file__)
-    )  # Get the current directory of the script
-    hook_path = os.path.join(cd, "hook.STEP")
-    hook = import_step(hook_path)
-    bottom_face = voxel.faces().group_by(Axis.Y)[
-      -3
-    ]  # Identify the bottom face of the voxel for hook placement
-    # Create the hook side joint for hook mounting
-    RigidJoint("hook_mount", hook, Location((0, 0, 0), (0, 90, 0)))
+  # # with BuildPart() as hook:
+  # #   cd = os.path.dirname(
+  # #     os.path.realpath(__file__)
+  # #   )  # Get the current directory of the script
+  # #   hook_path = os.path.join(cd, "hook.STEP")
+  # #   hook = import_step(hook_path)
+  # #   bottom_face = voxel.faces().group_by(Axis.Y)[
+  # #     -3
+  # #   ]  # Identify the bottom face of the voxel for hook placement
+  # #   # Create the hook side joint for hook mounting
+  # #   RigidJoint("hook_mount_hook", hook, Location((0, 0, 0), (0, 90, 0)))
 
-    # create labels for the assembly components
-    voxel.label = "i"
-    hook.label = "hook"
+  # #   # create labels for the assembly components
+  # #   voxel.label = "i"
+  # #   hook.label = "hook"
 
-    # Connect the hook to the voxel using the joints
-    hook.joints["hook_mount"].connect_to(voxel.joints["hook_mount"])
+  # #   # Connect the hook to the voxel using the joints
+  # #   hook.joints["hook_mount_hook"].connect_to(voxel.joints["hook_mount_voxel"])
 
-    voxel_assy = Compound(label=f"voxel_{i}", children=[voxel.part, hook])
 
-    show(voxel_assy)
-    return voxel_assy
+  # with BuildPart() as front_tube:
+  #   cd = os.path.dirname(
+  #     os.path.realpath(__file__)
+  #   )  # Get the current directory of the script
+  #   tube_path_1 = os.path.join(cd, "tube.STEP")
+  #   front_tube = import_step(tube_path_1)
+    
+  #   # bottom_face = voxel.faces().group_by(Axis.Y)[
+  #   #   -3
+  #   # ]  # Identify the bottom face of the voxel for hook placement
+  #   # Create the hook side joint for hook mounting
+  #   RigidJoint("tube_front_mount_tube", front_tube, Location((0, 0, 0), (180, 0, 180)))
 
+  #   # create labels for the assembly components
+  #   voxel.label = "voxel"
+  #   # hook.label = "hook"
+  #   front_tube.label = "front_tube"
+
+  #   # Connect the hook to the voxel using the joints
+  #   front_tube.joints["tube_front_mount_tube"].connect_to(voxel.joints["tube_front_mount_voxel"])
+    
+  
+  # with BuildPart() as back_tube:
+  #   cd = os.path.dirname(
+  #     os.path.realpath(__file__)
+  #   )  # Get the current directory of the script
+  #   tube_path_2 = os.path.join(cd, "tube_2.STEP")
+  #   back_tube = import_step(tube_path_2)
+    
+  #   # bottom_face = voxel.faces().group_by(Axis.Y)[
+  #   #   -3
+  #   # ]  # Identify the bottom face of the voxel for hook placement
+  #   # Create the hook side joint for hook mounting
+  #   RigidJoint("tube_back_mount_tube", back_tube, Location((0, 0, 0), (0, 0, 0)))
+
+  #   # create labels for the assembly components
+  #   voxel.label = "voxel"
+  #   # hook.label = "hook"
+  #   back_tube.label = "back_tube"
+
+  #   # Connect the hook to the voxel using the joints
+  #   back_tube.joints["tube_back_mount_tube"].connect_to(voxel.joints["tube_back_mount_voxel"])
+  
+  # with BuildPart() as tubes:
+  #   cd = os.path.dirname(
+  #     os.path.realpath(__file__)
+  #   )  # Get the current directory of the script
+  #   tube_path = os.path.join(cd, "tube.STEP")
+  #   front_tube = import_step(tube_path)
+  #   back_tube = import_step(tube_path)
+    
+  #   # bottom_face = voxel.faces().group_by(Axis.Y)[
+  #   #   -3
+  #   # ]  # Identify the bottom face of the voxel for hook placement
+  #   # Create the hook side joint for hook mounting
+    
+  #   RigidJoint("tube_front_mount_tube", front_tube, Location((50, 0, 0), (0, 0, 0)))
+  #   RigidJoint("tube_back_mount_tube", back_tube, Location((0, 0, 0), (0, 0, 0)))
+
+  #   # create labels for the assembly components
+  #   voxel.label = "voxel"
+  #   # hook.label = "hook"
+  #   front_tube.label = "front_tube"
+  #   back_tube.label = "back_tube"
+
+  #   # Connect the hook to the voxel using the joints
+  #   front_tube.joints["tube_front_mount_tube"].connect_to(voxel.joints["tube_front_mount_voxel"])  
+  #   back_tube.joints["tube_back_mount_tube"].connect_to(voxel.joints["tube_back_mount_voxel"])  
+    
+    
+  # # voxel_assy = Compound(label=f"voxel_{i}", children=[voxel.part, hook])
+  # # voxel_assy = Compound(label=f"voxel_new", children=[voxel.part, front_tube])
+  # # voxel_assy = Compound(label=f"voxel_{i}", children=[voxel.part, front_tube, back_tube])
+  # # voxel_assy_2 = Compound(label=f"voxel_new2", children=[voxel_assy, front_tube])
+  # voxel_assy = Compound(label=f"voxel_new", children=[voxel.part, tubes.part])
+
+  
+  # show(voxel_assy)
+  # return voxel_assy
+  # show(voxel_assy_2)
+  # return voxel_assy_2
+  show(voxel)
+  return voxel
+  
+  
 
 def export_assy(assy):
   """
@@ -263,10 +401,10 @@ h_c = (
 voxel_1 = create_voxel(
   s_i, d_i, t_b, t_c, h_c, 1
 )  # creates cad model of voxel with build123d
-export_assy(
-  voxel_1
-)  # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
-show(voxel_1)  # displays the voxel in the viewer
+# export_assy(
+#   voxel_1
+# )  # exports build123d assy to .STEP and .STL, each individual voxel is an assembly of the voxel and hook
+# show(voxel_1)  # displays the voxel in the viewer
 
 ### creates and exports a series of voxels
 # create_voxels(s_i, d_i, t_b, t_c, h_c)
