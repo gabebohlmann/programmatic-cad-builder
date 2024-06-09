@@ -26,6 +26,15 @@ from ocp_vscode import show
 # 1. Add build123d code for hook
 # 1. Add argument to export function to specify .STEP or .STL
 # 1. Change from star imports to individual component imports
+# 1. Figure out why the sketch from this code can't be show()ed
+#     with BuildSketch() as ex4_sk:
+#       with BuildLine() as ex4_ln:
+#           l1 = Line((0, 0), (l, 0))
+#           l2 = Line((l, 0), (l, w))
+#           l3 = ThreePointArc((l, w), (w, w * 1.5), (0.0, w))
+#           l4 = Line((0.0, w), (0, 0))
+#     show(ex4_sk.sketch)
+
 
 ### Functions ###
 
