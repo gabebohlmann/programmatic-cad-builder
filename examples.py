@@ -189,9 +189,7 @@ with BuildPart() as ex11:
   extrude(amount=-h, mode=Mode.SUBTRACT)
 # show(ex11)
 
-'''
 l, w, h = 80.0, 60.0, 10.0
-
 ex11a = Part() + Box(l, w, h)
 ex11a = chamfer(ex11a.edges().group_by()[-1], 4)
 ex11a = fillet(ex11a.edges().filter_by(Axis.Z), 5)
@@ -204,8 +202,31 @@ polygons = Sketch() + [
   for loc in GridLocations(l / 2, w / 2, 2, 2)
 ]
 ex11a -= extrude(polygons, -h)
-show(ex11a)
-  
+# show(ex11a)
+
+w, h = 80.0, 10.0
+
+with BuildPart() as ex28: 
+  with BuildSketch() as ex28_sk:
+    RegularPolygon(radius= w / 4, side_count=3)
+  ex28_ex = extrude(amount=h, mode=Mode.PRIVATE)
+  midfaces = ex28_ex.faces().group_by(Axis.Z)[1]
+  Sphere(radius = w / 2)
+  for face in midfaces:
+    with Locations(face):
+      Hole(h / 2)
+# show(ex28) 
+
+sk28a = RegularPolygon(radius = w / 4, side_count=3)
+tmp28a = extrude(sk28a, h)
+ex28a = Sphere(radius = w/2)
+for p in [Plane(face) for face in tmp28a.faces().group_by(Axis.Z)[1]]:
+  ex28a -= p * Hole(h/2, depth=w)
+# show(ex28a)
+
+'''
+       
+
 
 
 
