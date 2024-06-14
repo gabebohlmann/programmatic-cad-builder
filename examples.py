@@ -2,15 +2,14 @@ from build123d import *
 from ocp_vscode import show
 
 
-
+'''
 # Create a box with holes on each face
 with BuildPart() as custom_box:
     Box(100, 100, 100)
     with GridLocations(25, 25, 4, 4):
         Hole(10)
-show(custom_box.part)
+show(custom_box)
 
-'''
 b = Box(1, 2, 3)
 c = Cylinder(0.2, 5)
 r = b & c
@@ -204,7 +203,7 @@ polygons = Sketch() + [
 ]
 ex11a -= extrude(polygons, -h)
 # show(ex11a)
-'''
+
 w, h = 80.0, 10.0
 
 with BuildPart() as ex28: 
@@ -224,7 +223,8 @@ ex28a = Sphere(radius = w/2)
 for p in [Plane(face) for face in tmp28a.faces().group_by(Axis.Z)[1]]:
   ex28a -= p * Hole(h/2, depth=w)
 # show(ex28a)
-       
+'''
+
 sPnts = [ 
   (55, 30),
   (50, 35),
@@ -244,3 +244,84 @@ with BuildPart() as ex12:
     make_face()
   extrude(amount=10)
 # show(ex12)
+      
+l1 = Spline(*sPnts)
+l2 = Line((55, 30), (60, 0))
+l3 = Line((60, 0), (0, 0))
+l4 = Line((0, 0), (0, 20))
+sk12a = make_face([l1, l2, l3, l4])
+ex12a = extrude(sk12a, 10)
+# show(ex12a)
+
+a, b = 40, 4
+with BuildPart() as ex13:
+  Cylinder(radius=50, height=10)
+  with Locations(ex13.faces().sort_by(Axis.Z)[-1]):
+    with PolarLocations(radius=a, count=4): 
+      CounterSinkHole(radius=b, counter_sink_radius=2*b)
+    with PolarLocations(radius=a, count=4, start_angle=45, angular_range=360):
+      CounterBoreHole(radius=b, counter_bore_radius=2*b, counter_bore_depth=b)
+# show(ex13)
+
+ex13a = Cylinder(radius=50, height=10)
+plane = Plane(ex13.faces().sort_by().last)
+ex13a -= (
+  plane
+  * PolarLocations(radius=a, count=4)
+  * CounterSinkHole(radius=b, counter_sink_radius=2*b, depth=10)
+)
+ex13a -= (
+  plane
+  * PolarLocations(radius=a, count=4, start_angle=45, angular_range=360)
+  * CounterBoreHole(radius=b, counter_bore_radius=2*b, depth=10, counter_bore_depth=b)
+)
+# show(ex13a)
+
+a, b = 40, 20
+with BuildPart() as ex14:
+  with BuildLine() as ex14_ln:
+    l1 = JernArc(start=(0, 0), tangent=(0, 1), radius=a, arc_size=180)
+    l2 = JernArc(start= l1 @ 1, tangent= l1 % 1, radius=a, arc_size=-90)
+    l3 = Line(l2 @ 1, l2@1 + Vector(-a, a))
+  with BuildSketch(Plane.XZ) as ex14_sk:
+    Rectangle(b, b)
+  sweep()
+# show(ex14)
+
+l1 = JernArc(start=(0, 0), tangent=(0, 1), radius=a, arc_size=180)
+l2 = JernArc(start= l1 @ 1, tangent= l1 % 1, radius=a, arc_size=-90)
+l3 = Line(l2 @ 1, l2@1 + Vector(-a, a))
+ex14a_ln = l1 + l2 + l3
+sk14a = Plane.XZ * Rectangle(b, b)
+ex14a = sweep(sk14a, path=ex14_ln.wires()[0])
+# show(ex14a)
+
+a, b, c = 80, 40, 20
+with BuildPart() as ex15:
+  with BuildSketch() as ex15_sk:
+    with BuildLine() as ex15_ln:
+      l1 = Line((0, 0), (a, 0))
+      l2 = Line((l1@1, l1@1 + Vector(0,b)))
+      l3 = Line(l2@1, l2@1 + Vector(-c, 0))
+      l4 = Line(l3@1, l3@1 + Vector(0, -c))
+      l5 = Line(l4@1, Vector(0, (l4@1).Y))
+      mirror(ex15_ln.line, about=Plane.YZ)
+    make_face()
+  extrude(amount=c)
+# show(ex15)
+
+l1 = Line((0, 0), (a, 0))
+l2 = Line(l1 @ 1, l1 @ 1 + Vector(0, b))
+l3 = Line(l2 @ 1, l2 @ 1 + Vector(-c, 0))
+l4 = Line(l3 @ 1, l3 @ 1 + Vector(0, -c))
+l5 = Line(l4 @ 1, Vector(0, (l4 @ 1).Y))
+ln = Curve() + [l1, l2, l3, l4, l5]
+ln += mirror(ln, Plane.YZ)
+sk15a = make_face(ln)
+ex15a = extrude(sk15a, c)
+# show(ex15a)
+
+
+
+
+
