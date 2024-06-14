@@ -1,15 +1,16 @@
 from build123d import *
 from ocp_vscode import show
 
-'''
+
 
 # Create a box with holes on each face
 with BuildPart() as custom_box:
     Box(100, 100, 100)
     with GridLocations(25, 25, 4, 4):
         Hole(10)
-# show(custom_box.part)
+show(custom_box.part)
 
+'''
 b = Box(1, 2, 3)
 c = Cylinder(0.2, 5)
 r = b & c
@@ -203,7 +204,7 @@ polygons = Sketch() + [
 ]
 ex11a -= extrude(polygons, -h)
 # show(ex11a)
-
+'''
 w, h = 80.0, 10.0
 
 with BuildPart() as ex28: 
@@ -223,13 +224,23 @@ ex28a = Sphere(radius = w/2)
 for p in [Plane(face) for face in tmp28a.faces().group_by(Axis.Z)[1]]:
   ex28a -= p * Hole(h/2, depth=w)
 # show(ex28a)
-
-'''
        
-
-
-
-
-
-
-
+sPnts = [ 
+  (55, 30),
+  (50, 35),
+  (40, 30),
+  (30, 20),
+  (20, 25),
+  (10, 20),
+  (0, 20),
+]
+with BuildPart() as ex12:
+  with BuildSketch() as ex12_sk:
+    with BuildLine() as ex12_ln:
+      l1 = Spline(*sPnts)
+      l2 = Line((55, 30), (60, 0))
+      l3 = Line((60, 0), (0, 0))
+      l4 = Line((0, 0), (0, 20))
+    make_face()
+  extrude(amount=10)
+# show(ex12)
