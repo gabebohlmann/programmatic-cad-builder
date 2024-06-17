@@ -223,7 +223,6 @@ ex28a = Sphere(radius = w/2)
 for p in [Plane(face) for face in tmp28a.faces().group_by(Axis.Z)[1]]:
   ex28a -= p * Hole(h/2, depth=w)
 # show(ex28a)
-'''
 
 sPnts = [ 
   (55, 30),
@@ -320,7 +319,7 @@ ln += mirror(ln, Plane.YZ)
 sk15a = make_face(ln)
 ex15a = extrude(sk15a, c)
 # show(ex15a)
-
+'''
 
 
 
