@@ -1,5 +1,5 @@
 from build123d import *
-from ocp_vscode import show
+from ocp_vscode import show, show_all
 
 
 '''
@@ -413,7 +413,77 @@ ex19a_sk2 = Circle(radius=l/8)
 ex19a_sk2 = Pos(vtx.X, vtx.Y) * ex19a_sk2 + Pos(vtx2.X, vtx2.Y) * ex19a_sk2
 ex19a -= extrude(ex19_sk2, h)
 show(ex19a)
+
+l, w, h = 80.0, 60.0, 10.0
+with BuildPart() as ex20:
+  Box(l, w, h)
+  plane = Plane(ex20.faces().group_by(Axis.X)[0][0])
+  with BuildSketch(plane.offset(2*h)):
+    Circle(w/3)
+  extrude(amount=w)
+# show(ex20)
+
+ex20a = Box(l, w, h)
+plane = Plane(ex20.faces().group_by(Axis.X)[0][0])
+sk20 = plane * Circle(w/3)
+ex20a = extrude(sk20, w)
+
+w, l = 10.0, 60.0
+with BuildPart() as ex21:
+  with BuildSketch() as ex21_sk:
+    Circle(w/2)
+  extrude(amount=l)
+  with BuildSketch(Plane(origin=ex21.part.center(), z_dir=(-1, 0, 0))):
+    Circle(w/2)
+  extrude(amount=l)
+# show(ex21)
+
+ex21a = extrude(Circle(w/2), l)
+plane = Plane(origin=ex21a.center(), z_dir=(-1, 0, 0))
+ex21a += plane * extrude(Circle(w/2), l)
+# show(ex21a)
+
+l, w, h = 80.0, 60, 10.0
+with BuildPart() as ex22:
+  Box(l, w, h)
+  pln = Plane(ex22.faces().group_by(Axis.Z)[0][0]).rotated((0, -10, 0))
+  with BuildSketch(pln) as ex22_sk:
+    with GridLocations(l / 4, w / 4, 2, 2):
+      Circle(h/4)
+  extrude(amount=-100, both=True, mode=Mode.SUBTRACT)
+# show(ex22)
+
+ex22a = Box(l, w, h)
+plane = Plane((ex22a.faces().group_by(Axis.Z)[0][0])) * Rot(0, 50, 0)
+holes = Sketch() + [
+  plane * loc * Circle(h/4)
+  for loc in GridLocations(l / 4, w / 4, 2, 2)
+]
+ex22a -= extrude(holes, -100, both=True)
+# show(ex22a)
 '''
+
+pts = [
+    (-25, 35),
+    (-25, 0),
+    (-20, 0),
+    (-20, 5),
+    (-15, 10),
+    (-15, 35),
+]
+
+with BuildPart() as ex23: 
+  with BuildSketch(Plane.XZ) as ex23_sk:
+    with BuildLine() as ex23_ln:
+      l1 = Polyline(*pts)
+      l2 = Line(l1 @ 1, l1 @ 0)
+    make_face()
+    with Locations((0, 35)):
+      Circle(25)
+  #   split(bisect_by=Plane.ZY)
+  # revolve(axis=Axis.Z)
+# show(ex23)
+show_all()
 
 
 
