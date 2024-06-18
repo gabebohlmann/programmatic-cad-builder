@@ -319,6 +319,100 @@ ln += mirror(ln, Plane.YZ)
 sk15a = make_face(ln)
 ex15a = extrude(sk15a, c)
 # show(ex15a)
+
+l, w, h = 80.0, 60.0, 10.0
+
+with BuildPart() as ex16_single:
+  with BuildSketch(Plane.XZ) as ex16_sk:
+    Rectangle(l, w)
+    fillet(ex16_sk.vertices(), radius = l/10)
+    with GridLocations(x_spacing = l / 4, y_spacing=0, x_count=3, y_count=1):
+      Circle(l/12, mode=Mode.SUBTRACT)
+    # alignment defaults to the center of the original sketch/plane, this moves the rectangle to be centered on the origin (top-right) corner of the original sketch
+    Rectangle(l, w, align=(Align.MIN, Align.MIN), mode=Mode.SUBTRACT)
+  extrude(amount = l)
+# show(ex16_single)
+
+with BuildPart() as ex16:
+  add(ex16_single.part)
+  mirror(ex16_single.part, about=Plane.XY.offset(w))
+  mirror(ex16_single.part, about=Plane.YX.offset(w))
+  mirror(ex16_single.part, about=Plane.YZ.offset(w))
+  mirror(ex16_single.part, about=Plane.YZ.offset(-w))
+# show(ex16)
+
+sk16a = Rectangle(l, w)
+sk16a = fillet(sk16a.vertices(), l/10)
+circles = [loc * Circle(l/12) for loc in GridLocations(l/4, 0, 3, 1)]
+sk16a = sk16a - circles - Rectangle(l, w, align=(Align.MIN, Align.MIN))
+ex16a_single = extrude(Plane.XZ * sk16a, l)
+# show(ex16a_single)
+planes = [
+  Plane.XY.offset(w),
+  Plane.YX.offset(w),
+  Plane.YZ.offset(w),
+  Plane.YZ.offset(-w),
+]
+objs = [mirror(ex16a_single, plane) for plane in planes]
+ex16a = ex16a_single + objs
+# show(ex16a)
+
+a, b = 30, 20
+with BuildPart() as ex17:
+  with BuildSketch() as ex17_sk: 
+    RegularPolygon(radius=a, side_count=5)
+  extrude(amount=b)
+  mirror(ex17.part, about=Plane(ex17.faces().group_by(Axis.Y)[0][0]))
+# show(ex17)
+
+sk17a = RegularPolygon(radius=a, side_count=5)
+ex17a = extrude(sk17a, amount=b)
+ex17a += mirror(ex17a, Plane(ex17a.faces().sort_by(Axis.Y).first))
+# show(ex17a)
+
+l, w, h = 80.0, 60.0, 10.0
+a, b = 4, 5
+with BuildPart() as ex18:
+  Box(l, w, h)
+  chamfer(ex18.edges().group_by(Axis.Z)[-1], length=a)
+  fillet(ex18.edges().filter_by(Axis.Z),radius=b)
+  with BuildSketch(ex18.faces().sort_by(Axis.Z)[-1]):
+    Rectangle(2 * b, 2 * b)
+  extrude(amount= -h, mode=Mode.SUBTRACT)
+# show(ex18)
+
+ex18a = Part() + Box(l, w, h)
+ex18a = chamfer(ex18a.edges().group_by()[-1], a)
+ex18a = fillet(ex18a.edges().filter_by(Axis.Z), b)
+sk18a = Plane(ex18a.faces().sort_by().first) * Rectangle(2 * b, 2 * b)
+ex18a -= extrude(sk18a, -h)
+# show(ex18a)
+
+l, h = 80.0, 10.0
+with BuildPart() as ex19:
+  with BuildSketch() as ex19_sk19:
+    RegularPolygon(radius=l/2, side_count=7)
+  extrude(amount=h)
+  topf = ex19.faces().sort_by(Axis.Z)[-1]
+  vtx = topf.vertices().group_by(Axis.X)[-1][0]
+  vtx2Axis = Axis((0, 0, 0), (-1, -0.5, 0))
+  vtx2 = topf.vertices().sort_by(vtx2Axis)[-1]
+  with BuildSketch(topf) as ex19_sk2:
+    with Locations((vtx.X, vtx.Y), (vtx2.X, vtx2.Y)):
+      Circle(radius=l/8)
+  extrude(amount=-h, mode=Mode.SUBTRACT)
+# show(ex19)
+
+ex19a_sk = RegularPolygon(radius=l/2, side_count=7)
+ex19a = extrude(ex19a_sk, h)
+topf = ex19a.faces().sort_by().last
+vtx = topf.vertices().group_by(Axis.X)[-1][0]
+vtx2Axis = Axis((0, 0, 0),(-1, -0.5, 0))
+vtx2 = topf.vertices().sort_by(vtx2Axis)[-1]
+ex19a_sk2 = Circle(radius=l/8)
+ex19a_sk2 = Pos(vtx.X, vtx.Y) * ex19a_sk2 + Pos(vtx2.X, vtx2.Y) * ex19a_sk2
+ex19a -= extrude(ex19_sk2, h)
+show(ex19a)
 '''
 
 
